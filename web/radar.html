@@ -1,0 +1,329 @@
+<title>Radar Hemerion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : bandeau d'état → contexte produits → filtres collants → fil d'articles à bande de sévérité. Accent = rouge 635 nm du laser Heliance. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #18212b;
+  --muted: #5b6876;
+  --line: #dde3ea;
+  --laser: #d93a26;        /* 635 nm */
+  --laser-soft: #fbe7e3;
+  --crit: #c22a1c; --high: #c97800; --mod: #3b7a9e;
+  --crit-bg: #fde8e5; --high-bg: #fdf1dc; --mod-bg: #e3eff6;
+  --chip: #eef2f6;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #10151b; --surface: #171e26; --ink: #e6ebf0; --muted: #98a5b3; --line: #2a3440;
+  --laser: #ff6a52; --laser-soft: #3a1d18;
+  --crit: #ff7a6b; --high: #f0b04a; --mod: #7cb8da;
+  --crit-bg: #3a1a17; --high-bg: #362812; --mod-bg: #16293a; --chip: #212a35; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #10151b; --surface: #171e26; --ink: #e6ebf0; --muted: #98a5b3; --line: #2a3440;
+  --laser: #ff6a52; --laser-soft: #3a1d18;
+  --crit: #ff7a6b; --high: #f0b04a; --mod: #7cb8da;
+  --crit-bg: #3a1a17; --high-bg: #362812; --mod-bg: #16293a; --chip: #212a35; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 22px }
+a { color: inherit }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0 }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.label { font: 500 11px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+
+/* En-tête */
+header.top { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: end; justify-content: space-between; padding-block: 28px 4px }
+.brand { display: grid; gap: 6px }
+.brand h1 { font-size: clamp(28px, 4.6vw, 42px); font-weight: 700; letter-spacing: -.02em; line-height: 1.05 }
+.brand h1 .beam { color: var(--laser) }
+.brand p { margin: 0; color: var(--muted); max-width: 60ch }
+.status { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font: 500 12px/1 var(--f-mono) }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted) }
+.dot.live { background: #2e9e5b } .dot.snap { background: var(--high) }
+button, .btn { font: 600 14px/1 var(--f-body); border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 9px 14px; cursor: pointer }
+button.primary { background: var(--laser); border-color: var(--laser); color: #fff }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid var(--laser); outline-offset: 2px }
+
+/* Synthèse */
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; text-align: left; cursor: pointer }
+.stat b { font: 700 30px/1 var(--f-display) }
+.stat[aria-pressed="true"] { border-color: var(--laser); box-shadow: inset 0 0 0 1px var(--laser) }
+.stat.crit b { color: var(--crit) } .stat.high b { color: var(--high) } .stat.mod b { color: var(--mod) }
+
+/* Contexte produits */
+.context { display: grid; grid-template-columns: 1.1fr 1.1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden }
+.context > div { padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0 }
+.context > div + div { border-left: 1px solid var(--line) }
+.context h3 { font-size: 18px; font-weight: 700 }
+.context ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 3px }
+.spec { font: 500 12px/1.4 var(--f-mono); color: var(--laser) }
+.timeline { display: grid; gap: 6px; font-size: 14px }
+.timeline div { display: grid; grid-template-columns: 74px 1fr; gap: 8px }
+.timeline .mono { color: var(--muted); font-size: 12px; padding-top: 2px }
+
+/* Filtres */
+.filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--line) }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+input[type="search"], select, input[type="url"] { font: 15px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px }
+input[type="search"] { flex: 1 1 260px; min-width: 0 }
+.chip { border-radius: 999px; padding: 7px 12px; font-size: 13px; background: var(--chip); border: 1px solid transparent }
+.chip[aria-pressed="true"] { background: var(--laser-soft); border-color: var(--laser); color: var(--ink) }
+.count { color: var(--muted); font-size: 14px; margin-left: auto }
+
+/* Articles */
+.feed { display: grid; gap: 10px }
+.art { display: grid; grid-template-columns: 6px 64px minmax(0, 1fr) auto; gap: 0 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden }
+.art.read { opacity: .62 }
+.stripe { background: var(--mod) } .art.critique .stripe { background: var(--crit) } .art.élevé .stripe { background: var(--high) }
+.score { padding-block: 14px; display: grid; align-content: start; justify-items: center; gap: 4px }
+.score b { font: 700 24px/1 var(--f-display); font-variant-numeric: tabular-nums }
+.lvl { font: 500 10px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; padding: 4px 6px; border-radius: 4px; background: var(--mod-bg); color: var(--mod) }
+.critique .lvl { background: var(--crit-bg); color: var(--crit) } .élevé .lvl { background: var(--high-bg); color: var(--high) }
+.body { padding-block: 14px; display: grid; gap: 6px; min-width: 0 }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted) }
+.meta .cat { color: var(--ink); font-weight: 600 }
+.body h3 { font: 600 18px/1.3 var(--f-body); }
+.body h3 a { text-decoration: none } .body h3 a:hover { text-decoration: underline; text-decoration-color: var(--laser) }
+.body p { margin: 0; font-size: 15px; max-width: 75ch }
+.impact { font-size: 14px; color: var(--muted); border-left: 2px solid var(--laser); padding-left: 10px }
+.tags { display: flex; flex-wrap: wrap; gap: 6px }
+.tag { font: 12px/1 var(--f-mono); background: var(--chip); padding: 5px 7px; border-radius: 4px; color: var(--muted) }
+.tag.prod { color: var(--laser); background: var(--laser-soft) }
+.acts { padding: 12px 12px 12px 0; display: grid; align-content: start; gap: 6px }
+.acts button { padding: 6px 9px; font-size: 13px; background: transparent }
+.acts button[aria-pressed="true"] { color: var(--laser); border-color: var(--laser) }
+.empty { padding: 32px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px }
+
+/* Réglages API */
+details.cfg { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px }
+details.cfg summary { cursor: pointer; font-weight: 600 }
+details.cfg .row { margin-top: 10px }
+details.cfg input { flex: 1 1 320px; min-width: 0 }
+.msg { font-size: 14px; color: var(--muted); margin: 8px 0 0 }
+footer { color: var(--muted); font-size: 13px }
+
+@media (max-width: 860px) {
+  .context { grid-template-columns: 1fr } .context > div + div { border-left: 0; border-top: 1px solid var(--line) }
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}
+@media (max-width: 560px) {
+  .art { grid-template-columns: 5px minmax(0, 1fr) } .score { grid-column: 2; grid-auto-flow: column; justify-content: start; padding-block: 12px 0 }
+  .body { grid-column: 2; padding-block: 4px 8px; padding-right: 12px } .acts { grid-column: 2; grid-auto-flow: column; justify-content: start; padding: 0 0 12px }
+}
+@media (prefers-reduced-motion: no-preference) { .art { transition: opacity .2s } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="label">Veille pharma · Hemerion Therapeutics</span>
+      <h1>Radar <span class="beam">Hemerion</span></h1>
+      <p>Les actualités qui peuvent peser sur Pentalafen® et Heliance® : concurrence dans le glioblastome, technologie PDT/5-ALA, réglementation FDA/EMA/MDR, marché.</p>
+    </div>
+    <div class="status">
+      <span class="pill" id="srcPill"><span class="dot" id="srcDot"></span><span id="srcTxt">Chargement…</span></span>
+      <button id="reload" type="button">Actualiser</button>
+      <button id="collect" class="primary" type="button" title="Déclenche le workflow n8n de collecte">Lancer une collecte</button>
+    </div>
+  </header>
+
+  <section class="summary" aria-label="Synthèse par niveau d'impact">
+    <button class="stat" data-level="" type="button" aria-pressed="true"><span class="label">Articles suivis</span><b class="mono" id="nAll">0</b></button>
+    <button class="stat crit" data-level="critique" type="button" aria-pressed="false"><span class="label">Impact critique</span><b class="mono" id="nCrit">0</b></button>
+    <button class="stat high" data-level="élevé" type="button" aria-pressed="false"><span class="label">Impact élevé</span><b class="mono" id="nHigh">0</b></button>
+    <button class="stat mod" data-level="modéré" type="button" aria-pressed="false"><span class="label">Impact modéré</span><b class="mono" id="nMod">0</b></button>
+  </section>
+
+  <section class="context" aria-label="Ce que la veille protège">
+    <div>
+      <span class="label">Médicament</span>
+      <h3>Pentalafen®</h3>
+      <span class="spec">5-ALA HCl · 2 g oral, avant chirurgie</span>
+      <ul>
+        <li>Désignation orpheline FDA (2021) et EMA</li>
+        <li>Fast Track FDA (2025)</li>
+        <li>À surveiller : exclusivité orpheline UE, produits combinés, concurrents 5-ALA</li>
+      </ul>
+    </div>
+    <div>
+      <span class="label">Dispositif</span>
+      <h3>Heliance®</h3>
+      <span class="spec">Laser 635 nm · diffuseur à ballonnet · ~30 min peropératoire</span>
+      <ul>
+        <li>Statut de dispositif médical orphelin (EMA, avril 2026)</li>
+        <li>ISO 13485:2016, marquage CE en préparation</li>
+        <li>À surveiller : révision MDR, organismes notifiés, voies FDA dispositif</li>
+      </ul>
+    </div>
+    <div>
+      <span class="label">Jalons glioblastome</span>
+      <div class="timeline">
+        <div><span class="mono">fév. 2026</span><span>Avis FDA positif (type C)</span></div>
+        <div><span class="mono">mai 2026</span><span>Inclusions HTX-GBM01 terminées</span></div>
+        <div><span class="mono">sept. 2026</span><span>Brevets US et Japon</span></div>
+        <div><span class="mono">à venir</span><span>Essai pivot</span></div>
+        <div><span class="mono">2030</span><span>Lancement visé US/UE</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="filters" aria-label="Filtres">
+    <div class="row">
+      <input id="q" type="search" placeholder="Rechercher : Novocure, orphan, MDR, 5-ALA…" aria-label="Rechercher">
+      <select id="prod" aria-label="Produit">
+        <option value="">Tous les produits</option>
+        <option value="Pentalafen">Pentalafen®</option>
+        <option value="Heliance">Heliance®</option>
+      </select>
+      <select id="sort" aria-label="Tri">
+        <option value="score">Tri : impact</option>
+        <option value="date">Tri : plus récents</option>
+      </select>
+    </div>
+    <div class="row" id="cats"></div>
+  </section>
+
+  <section class="feed" id="feed" aria-live="polite"></section>
+
+  <details class="cfg">
+    <summary>Connexion à l'automatisation n8n</summary>
+    <div class="row">
+      <input id="api" type="url" aria-label="URL de l'API articles" placeholder="https://…/webhook/hemerion-veille-articles">
+      <button id="saveApi" type="button">Enregistrer</button>
+    </div>
+    <p class="msg" id="cfgMsg">Le workflow n8n collecte 21 flux toutes les 6 h, score l'impact et stocke les articles dans Supabase. Cette page lit l'API GET ; sans connexion, elle affiche le dernier instantané.</p>
+  </details>
+
+  <footer>Score d'impact 0–100 : mention directe d'Hemerion (+100), glioblastome (+35), PDT / 5-ALA (+35), concurrents identifiés (+25), réglementaire orphelin / MDR / produits combinés (+15 à +25). Articles lus et favoris enregistrés dans ce navigateur.</footer>
+</div>
+
+<script id="snapshot" type="application/json">{"generated_at": "2026-10-21T12:20:00Z", "count": 26, "articles": [{"url_hash": "4ba1b741", "title": "UP Oncolytics Gets $2.5M NIH Funding for Zika Virus Glioblastoma Therapy", "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPQ3B3SjkySmxiM1R0VUhNa0l0UzdOMnNxc29oUlFZd0hhc0g3cDRnd1hpd2Q0Zl9melk5ZnhNSjNzanRRVVJ4X1BmcFI5VVZXZ1VfeFl4LWowWjBwUEFHYUpfS2Z5TFZyQndidmVCeG1qQ21KWUhUc1U5X0lHckMydktwN212aXJRVEEyajF6Rm0yNHphQzlBdVVDcXpLWWZpcURMWVNnTkpZTU44V202RDl1Yi0xdw?oc=5", "source": "The Clinical Trial Vanguard", "published_at": "2026-10-20T06:45:24Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 46, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, funding"}, {"url_hash": "c5599bf4", "title": "Duke researchers identify survival-associated biomarkers in Phase I glioblastoma immunotoxin trial", "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPOFY2RXJHUzJiTmdGUHotX0IxS2t5aGQxdHFzU2VIcVVxcWY0U0NVMHV3VkpDTUdVbHJSQ1dyZjBIM3BpX0haaWlPR3hJbExycEJSNUVvbXdWTTd6WWlfTHloVUZtVm1pN1RJVkstUDRQdjZ5YjhGcFpkZjVoblVZdERLNkoxWUN0ZHRVTA?oc=5", "source": "AllSci", "published_at": "2026-10-19T15:58:17Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 40, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom"}, {"url_hash": "9afe995b", "title": "FDA expands Alpha Tau glioblastoma trial to 20 patients", "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQMVUtUF8xbmNaaTdweV9Kd1BzcjU5X2FWX1d2am54MVRFX3kyS2pYeGhaaWhuRlEzTllRR3FzMXl5UlprLVBFaTl3eUhUejdvLThrSDM0amFqTllYb3Z0XzBmVmxWOExiZGVmdFdMYW9ndXcxSFVNQnZGU0F2Sjg2UFVfMVpuYWdzeGc5aE9IcVVwY21nUGdWSloyTUtmOEEwdFdxTHBLVzNwLWNsSmRfUEpn?oc=5", "source": "Investing.com", "published_at": "2026-10-19T13:02:39Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 48, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, fda"}, {"url_hash": "79dcbbf4", "title": "FDA Greenlights Expansion Of Alpha Tau's Brain Cancer Trial, With New Data Weeks Away", "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQQ243eUU5cG5QRWh6djRiSDRKd1VBVkpMT0FGNnJUQ3ZrWVI4TGZOcmp2d2NROFdzblBVOVFDUHZzbHBrQWV5bDc3TFpNZ3hsMVZKMU5jcXhpZjFoUFhZYlhTT1VnZW9KelVmc1N6UkNtMXpXMjJpNTB2ZmhUb2tqT2Y2VEw4eVJiRVlJYkxYeVdGSUJseGdtcW1Fa2R5enJhNkZtWUhjenc3bEZFcmFSM2k2bThsYmtwVkx4VENfN2ZqSlU?oc=5", "source": "Menafn", "published_at": "2026-10-19T06:03:43Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 32, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "brain cancer, fda"}, {"url_hash": "3eebca4a", "title": "Wistar Institute study identifies immunotherapy strategy for glioblastoma", "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE81SVk4SWVmYVFUdXlZUWlGcjlIUnR4QkVBSWw2NGdONktCd0I4d0xreVhTakwwSlZHNzZsNk1GWTh0ZXVGcmo4LTRIUmI4MGdwVnhDRzB6d01BY3Ixbk9BZDNGdW0?oc=5", "source": "The Cancer Letter", "published_at": "2026-10-16T22:35:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom"}, {"url_hash": "29018f87", "title": "United Kingdom Glioblastoma Tumor Treating Fields Therapy Market: Market to Expand at a 9.2% CAGR by 2036", "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOcDREcG8zRF9SSS1XWXZMR2dyVjExOU5kajMtdUJzLUxPaV9IdlZ5QXppOUFIYkkyWEVuLWVyVVpmaWF5elNxdUpHSEhCUXNQZWxFb2tLYzhidTdLb3BDLTdVS2NaVUljN0lVUFZwWUdVWWFlaG90SGJWcjNkVC1FOE9sZlRCaTd3c0k1Wk5aYWlKbXo4NGNBRA?oc=5", "source": "openPR.com", "published_at": "2026-10-15T17:14:59Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 64, "impact_level": "élevé", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, tumor treating fields"}, {"url_hash": "082281b5", "title": "SurVaxM Cancer Vaccine Shows Clinically Meaningful OS Signal in Newly Diagnosed Glioblastoma", "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNbGg5WVA4dXNkWjYyc09kdFZVZnpuR0tXUHpvNU81ZjVMOWtjVUFGQ0VZc1RsV2pJal90UE41V0ZsQXM3QXFaSVFCWV9kQlJsUGg2WUh2UzZWeGRxdnhBdmRnNVZFWEhJeHZWTVVrd1NpU3hZUmQ5Mjlmdll3eVhYUkFlRW1tNmE2ckNqTUR1WDBZZzI3UkFQeUdJX2EyZzBhUVVOdEFsQ3dsU1VueURwTmJHSVl5VXItTTdNS1ln?oc=5", "source": "OncLive", "published_at": "2026-10-14T21:11:34Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 39, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom"}, {"url_hash": "7a029ef4", "title": "The Medical Device Launch Playbook: Patents, FDA, Reimbursement and Strategic Timing", "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPZGVIUUpTTVFDbWthMjN3UW5panpkLWpVOUJPWXEwQW5Dc2cwVkZBZ0xXTVlTNE5uU3drd0hCYUJFdUlDcFFydEJxUllVbnMxM1BQcGMyRHRMaDhjd0xNUUZkaFkxT0pOQkVUakpraVB0T0VNeXpLSjZOTHBCcWcwb241QQ?oc=5", "source": "JD Supra", "published_at": "2026-10-09T19:14:03Z", "summary": "", "category": "Réglementaire", "products": "Heliance", "impact_score": 31, "impact_level": "modéré", "impact_note": "Changement de règles ou de pratiques des autorités (FDA, EMA, MDR, ANSM/HAS) applicables au médicament orphelin Pentalafen® ou au dispositif Heliance® : impact sur le calendrier d'autorisation 2030.", "matched_keywords": "medical device, fda, reimburse"}, {"url_hash": "790f1f46", "title": "Révision MDR/IVDR : adoption du texte révisé visée pour mi-2027", "url": "https://www.emergobyul.com/news/europe-targets-revised-mdr-and-ivdr-adoption-q2-q3-2027", "source": "Emergo by UL", "published_at": "2026-10-09T08:00:00Z", "summary": "Vote favorable des commissions IMCO et BUDG en septembre 2026, vote en plénière attendu au T1 2027 puis trilogues ; le texte actuel reste pleinement applicable en attendant.", "category": "Réglementaire", "products": "Heliance", "impact_score": 70, "impact_level": "élevé", "impact_note": "Heliance® est un dispositif soumis au MDR : le calendrier et le contenu de la révision conditionnent la stratégie de marquage CE (exigences actuelles toujours applicables d'ici là).", "matched_keywords": "mdr, medical device"}, {"url_hash": "ff32bfe3", "title": "Earlier Use of TTFields Misses Mark in Glioblastoma", "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQMjJkenJkYkxkY1JfQnI4V3h0dzFHendHdFVEaW0tbHMyb1BDaVFBYXMxYm5EbEpIa1Z2c202SGY5Z3o2TUJ1VTlRb1lFZEJ2Z293YkFrREJYSno0SE1LV1hybkdyQVpOdVVfWXdVVHNTaGptZ2lMdmU1cFozQ3BQUlpDTWVzRUtVbXVkSFMxdUpYc2hQeXpzR0VpSVFLYWxMLWFUNURPUk9IZlhO?oc=5", "source": "Medscape", "published_at": "2026-10-09T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 60, "impact_level": "élevé", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, ttfields"}, {"url_hash": "a3917b03", "title": "Oncopeptides confirme la pénétration de la barrière hémato-encéphalique dans l'étude Window-of-Opportunity sur le glioblastome", "url": "https://news.google.com/rss/articles/CBMiogJBVV95cUxNQWtzLURvbHc4NTg5a3U2Wjl3NXVQc2IyaWdKNUVvd1BLajVIT3BmY25pcGN6NVh2UWE0bkhuaVV3VlB0TWc2RkZZdExkV284NjYyZ25aaUVuLUVZYUtHYWpneldHVnZzZUFlNGVYX21kaXdxcnMxSWFmOHhCTjZCa2pkRnhMV3Bjd25wT3JSNDBkY2NNSy1LWl94eGFQbDhXOGY1NDBlSTB6dkpLbFJQQUF0RXVycHVfRHVxV0NnZXc1bU00cnp1VU9YZ3FvdHdQQW5VX3JncG9wS29hQjhuS2daWXI1UVZ1TS1NOE1RaTRRX1JEZ2dyRzM1akxoTXRCX3gzdmpJRUFRQkJPQ2gzSGg3WGZPRDRnZmY4RkRYeDAzUQ?oc=5", "source": "Ma Clinique", "published_at": "2026-10-09T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastome"}, {"url_hash": "a020fb76", "title": "Alpheus Medical Opens Enrollment in New Clinical Trial for Butterfly Glioblastoma", "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPTlotMnFuaGc0dTlMa3d2NlpXWmdEU1k5SFM3M1JncTdONkE1NUxnckdObmJQNVJRQXU5NHBFNU5jSTh6dERpYXg3TFk3SXJkb0c2cXBOaFZiNFQ3eU5JdjFoOEdYYnhJVkZPNnVlb083UTNSMnhFdThVOFk0TmtCbnVvbk95NTdHQUpjZThGcXhkZS1DTjByOUdJMHpUcHNNQlNpdDNXR01YdXBUTTFoRnBld0VXVVlOa2JjQm5B?oc=5", "source": "BioSpace", "published_at": "2026-10-08T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, sonodynamique"}, {"url_hash": "601c5fad", "title": "Novel Cancer Vaccine Plus Temozolomide Miss Primary End Point in Glioblastoma", "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQLUVNQXJrOENldloxZzE5Z29VckhjWmhHYUtSQzFLUC1zQ2JxUm1IMnBaTEVhUEd4VU1HdU5KT2tiSTVjek1JOGh3REJlLTQyb3pYaTdXVVFzX2k2Y2FUQkR0T3AzdDFITE4xcFNGLWt2aDh1UDZfUy1haUg3R2pTR2RlVzVNelNlRHJpc3ZCOTI4ZG55YWZMM3pKZnNMd2xCQzdMZ1Nrc2RRUEdXOHVxaWl3?oc=5", "source": "CancerNetwork", "published_at": "2026-10-07T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 64, "impact_level": "élevé", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, temozolomide"}, {"url_hash": "d29f16de", "title": "MimiVax’s cancer vaccine fails phase 2 glioblastoma study, but CEO still sees data as ‘inspiring’", "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPU0FRVkdzR1JJTWxnMFF4RGpKMWxWRVM2ejVLTzZnVUtYa1VvZ0MyaHAzSTl6YmZZYzVTdk11dEN4dmtILWdjVUszR1ZwbDJqam4zb2M3bGZkSXZIU01VWmtmVWFHTkE2THFOekdfcWVTeWZJNktlbnBWX204cFgtM2diQ01UUGdzUkptdUhYMTV1am4tOFpwa0pkS29wdHZtaEw3WFNsY3FwVTEydVhsUEJJUG0wN0w1WEVsSWRFQTdSOElzUEE?oc=5", "source": "Fierce Biotech", "published_at": "2026-10-07T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 39, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom"}, {"url_hash": "7b5ae40e", "title": "Recurrent or Progressive High-Grade Glioma Market Set", "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNQndOWHdNZ2VpZ0JjRlFQZWl1Mi1vZWR0bWxLbmN3c0pvNWE3TW96dkE0TlBZN0l0ZkF1S01ibWNfTFpoTGFpTDhLRkJ2VUJUSVB1VTlLSmRDcmRjakc5NlVhaDd0Q2d4VzZORXFHNzg4dDg2UTNDTUtmazJINmNQaHlKVU5hM3ZvOFZxR3RRZElTdVk?oc=5", "source": "openPR.com", "published_at": "2026-10-06T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 50, "impact_level": "élevé", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "high-grade glioma"}, {"url_hash": "b5f014d1", "title": "GPNMB CAR-T: Targeting Glioblastoma and Its Immune Microenvironment", "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1Qc2NrbTlLVkFfSmpSZHpqRFlEZlRLY0FyaXVUN1lDWlpIUFVlVDBLTkJyRkJ6RDRhaFRYZmR4TXE4TUxwWTFYRVk2OVYyWmZqRGdNYWFjRFMtVVVvU3F5NlVmYXU0UHVzODJPUUFB?oc=5", "source": "Oncodaily", "published_at": "2026-10-02T07:00:00Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom, car-t"}, {"url_hash": "83294e2a", "title": "Rznomics' RNA-editing cancer therapy RZ-001 recommended for EU orphan drug designation in glioma", "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPLVRXYmg4THBZR0l3RExLZ2p6ZlBYYldyMDBoeXJObnBqb19mSWJSVXVjdFlRZmxQUkNsZGVJQjhJUlVPUGxXcmVjek1TVF9xMG53bVI2Mmg5Y05vdWNENUlFUXNuT0stTWNTQUVWX1RsRjliWG50SXRXODdFQkdyVmVObW5ha1A1WXpFRFpsS2JCZWpoX3RwSmI1QXB1QWpGT2s5b29QZFNHUVpqMm8xQkFpaEl6WkZCVlNuS1JXZWpRa1hiSTk4Yg?oc=5", "source": "Dealroom", "published_at": "2026-09-28T03:57:57Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 34, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioma, orphan"}, {"url_hash": "ae3e7273", "title": "Imvax Glioblastoma Data Backs Move Toward Phase 3 Trial", "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQN2NJTkJpa1pXR0EwRU5SQ3ZYbnZVbEIwYjh0MWU3bDQwU3lza1Z3R1BVVHBRMU9LT0FqMURBUUpiUjVoNnZTSmZpWGthYjAyMnhET3NWUjZoSHBfYUI2cm05WDZtd2Y3aEsyQmdQQVRWWVVHa0FNREFzcHNYaW0yWXRUOE04NUUzbW1IWjFQMXY0b2Q1aTBRQllqOXoxdw?oc=5", "source": "MyChesCo", "published_at": "2026-09-26T19:12:29Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastom"}, {"url_hash": "1c2043c1", "title": "FDA Grants SOTIO's SOT106 ADC Orphan Drug and Fast Track Designations for Sarcoma", "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOZzB6NzBza1h3UHhQakNJWmRUa09tMzg0OUJGT1U2YnpJdVdKbnFUV3k2bWtGUk1jQ2Rxd0NZRkNqTHF3ZkwzSmFJSlBZOWQtUENyQWhKQlA3R1ZvYlFFZEplM0gyQVAxTGZKZEtFRkVsXzVtWTlNakFuUU9tT1VPRHJIMVZfQlg3b0hyQ3VhaUdSVmVESVg5NFdXWFB6S0RKWGNMNGRyZDFIc083UjFGWlp1NUlFdnh6Q01ONnp3R3lsQQ?oc=5", "source": "BioPharm International", "published_at": "2026-09-24T07:00:00Z", "summary": "", "category": "Réglementaire", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Changement de règles ou de pratiques des autorités (FDA, EMA, MDR, ANSM/HAS) applicables au médicament orphelin Pentalafen® ou au dispositif Heliance® : impact sur le calendrier d'autorisation 2030.", "matched_keywords": "orphan, fast track, fda"}, {"url_hash": "87a14c13", "title": "Une nouvelle voie pour le traitement du glioblastome", "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNX2RlYzRFaEt3c0lDRFJrOEY3ei1WV2RZUTNnWHJzRXJTZHJNS29KSGllTllOZXY0UndfaXpLWWxMbHFHUUo5VUZOSTBwSThydVY5OGRCLXhyazRzbGVXSG5KbUF2WkNmWEY2QkwwLXlsLTMwQk50aWstdVYwSm12LVRYSVJvdm5vUGd5WEJkLVVGcmJDM1E?oc=5", "source": "McGill University", "published_at": "2026-09-23T18:38:13Z", "summary": "", "category": "Concurrence glioblastome", "products": "Pentalafen, Heliance", "impact_score": 35, "impact_level": "modéré", "impact_note": "Évolution du standard de soins ou d'un concurrent sur le glioblastome nouvellement diagnostiqué : peut modifier le comparateur de l'essai pivot et le positionnement commercial.", "matched_keywords": "glioblastome"}, {"url_hash": "843c9232", "title": "Hemerion obtient de nouveaux brevets aux États-Unis et au Japon", "url": "https://hemerion.com/hemerion-is-accelerating-its-international-expansion-with-the-granting-of-new-patents-in-the-united-states-and-japan/", "source": "Hemerion", "published_at": "2026-09-09T08:00:00Z", "summary": "Notifiée fin juillet 2026, la délivrance de brevets aux États-Unis et au Japon soutient le déploiement international de la plateforme d'oncologie interventionnelle.", "category": "Hemerion & produits", "products": "Pentalafen, Heliance", "impact_score": 100, "impact_level": "critique", "impact_note": "Renforce la protection de la plateforme Pentalafen®/Heliance® sur deux marchés clés avant l'essai pivot : argument direct pour la prochaine levée et les partenariats.", "matched_keywords": "hemerion, brevets"}, {"url_hash": "c8b407eb", "title": "Hemerion Research Grant : deux prix internationaux remis, nouvelle édition annoncée", "url": "https://hemerion.com/research-grant-hemerion/", "source": "Hemerion", "published_at": "2026-07-09T08:00:00Z", "summary": "Une seconde édition, plus dotée, du programme de bourses de recherche est lancée après une première édition ayant primé une équipe américaine et une équipe européenne.", "category": "Hemerion & produits", "products": "Pentalafen, Heliance", "impact_score": 80, "impact_level": "critique", "impact_note": "Outil de visibilité scientifique et de constitution d'un réseau d'investigateurs (US/UE) pour les futures études.", "matched_keywords": "hemerion"}, {"url_hash": "0148bfdd", "title": "Recrutement terminé dans l'essai HTX-GBM01 de Pentalafen®/Heliance®", "url": "https://hemerion.com/hemerion-announces-completion-of-patient-enrollment-in-htx-gbm01-trial-and-accelerates-clinical-development-of-its-lead-therapy/", "source": "Hemerion", "published_at": "2026-05-04T08:00:00Z", "summary": "Le comité indépendant de surveillance a confirmé la fin des inclusions dans l'essai international sur le glioblastome nouvellement diagnostiqué (UPMC Pittsburgh et CHU de Lille).", "category": "Hemerion & produits", "products": "Pentalafen, Heliance", "impact_score": 100, "impact_level": "critique", "impact_note": "Jalon clinique majeur : ouvre la voie aux résultats de phase 1/2 et à la préparation de l'essai pivot (lancement visé aux États-Unis en 2030).", "matched_keywords": "hemerion, pentalafen, heliance, glioblastome"}, {"url_hash": "c23876a2", "title": "L'EMA accorde le statut de dispositif médical orphelin à la plateforme Heliance®", "url": "https://hemerion.com/the-european-medicines-agency-ema-has-granted-orphan-medical-device-status-to-the-heliance-platform-developed-by-hemerion/", "source": "Hemerion", "published_at": "2026-04-20T08:00:00Z", "summary": "Le panel d'experts de l'EMA a validé le statut « Orphan Medical Device » pour l'illumination dans la thérapie photodynamique du glioblastome nouvellement diagnostiqué et opérable.", "category": "Hemerion & produits", "products": "Heliance", "impact_score": 100, "impact_level": "critique", "impact_note": "Statut obtenu pour Heliance® dans la PDT du glioblastome opérable : peut alléger les exigences de preuve clinique pour le marquage CE sous MDR.", "matched_keywords": "heliance, ema, orphan, mdr"}, {"url_hash": "7a0be951", "title": "Paquet pharmaceutique UE 2026 finalisé : nouvelles règles d'exclusivité et de protection des données", "url": "https://www.pharmafocuseurope.com/news/eu-2026-pharma-package-finalized-new-regulatory-framework-reshapes-exclusivity-and-innovation-incentives", "source": "Pharma Focus Europe", "published_at": "2026-04-10T08:00:00Z", "summary": "Protection des données ramenée à une base de 8 ans + 1 an de protection de marché (modulable), extensions possibles de l'exclusivité orpheline par nouvelle indication ; adoption finale attendue à l'automne 2026.", "category": "Réglementaire", "products": "Pentalafen", "impact_score": 75, "impact_level": "élevé", "impact_note": "Pentalafen® est désigné médicament orphelin dans l'UE : la durée d'exclusivité commerciale et ses extensions conditionnent la valeur de l'actif après 2030.", "matched_keywords": "pharma package, orphan, market exclusivity"}, {"url_hash": "7224768a", "title": "Retour positif de la FDA sur la stratégie clinique d'Hemerion dans le glioblastome", "url": "https://hemerion.com/positive-fda-feedback-on-hemerions-clinical-strategy-for-glioblastoma/", "source": "Hemerion", "published_at": "2026-02-18T08:00:00Z", "summary": "Après une réunion de type C en novembre 2025, la FDA a donné un avis favorable sur la stratégie clinique et réglementaire dans le glioblastome nouvellement diagnostiqué.", "category": "Hemerion & produits", "products": "Pentalafen, Heliance", "impact_score": 100, "impact_level": "critique", "impact_note": "Valide le design réglementaire américain (réunion de type C, nov. 2025) : réduit le risque sur le plan de développement jusqu'à l'AMM.", "matched_keywords": "hemerion, fda, glioblastome"}]}</script>
+<script>
+(function () {
+  const DEFAULT_API = 'https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-articles';
+  const CATS = ['Hemerion & produits', 'Technologie PDT / 5-ALA', 'Concurrence glioblastome', 'Réglementaire', 'Marché & financement'];
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const state = { articles: [], level: '', cat: '', q: '', prod: '', sort: 'score',
+    read: new Set(store.get('hv_read', [])), star: new Set(store.get('hv_star', [])), onlyStar: false };
+  const $ = id => document.getElementById(id);
+  const apiUrl = () => store.get('hv_api', DEFAULT_API);
+  $('api').value = apiUrl();
+
+  const snapshot = JSON.parse($('snapshot').textContent);
+
+  function setSource(kind, when) {
+    $('srcDot').className = 'dot ' + (kind === 'live' ? 'live' : 'snap');
+    const d = when ? new Date(when).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    $('srcTxt').textContent = kind === 'live' ? 'En direct · ' + d : 'Instantané · ' + d;
+  }
+
+  async function load() {
+    $('srcTxt').textContent = 'Chargement…';
+    try {
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 6000);
+      const r = await fetch(apiUrl(), { signal: ctrl.signal }); clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      if (!data || !Array.isArray(data.articles) || !data.articles.length) throw new Error('vide');
+      state.articles = data.articles; setSource('live', data.generated_at);
+    } catch (e) {
+      state.articles = snapshot.articles; setSource('snap', snapshot.generated_at);
+    }
+    render();
+  }
+
+  function catChips() {
+    const counts = {}; state.articles.forEach(a => counts[a.category] = (counts[a.category] || 0) + 1);
+    const chips = [['', 'Toutes catégories', state.articles.length]].concat(CATS.map(c => [c, c, counts[c] || 0]));
+    $('cats').innerHTML = chips.map(([v, l, n]) =>
+      '<button type="button" class="chip" data-cat="' + v + '" aria-pressed="' + (state.cat === v && !state.onlyStar) + '">' + l + ' <span class="mono">' + n + '</span></button>').join('') +
+      '<button type="button" class="chip" id="starOnly" aria-pressed="' + state.onlyStar + '">★ Favoris <span class="mono">' + state.star.size + '</span></button>' +
+      '<span class="count" id="count"></span>';
+    $('cats').querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { state.cat = b.dataset.cat; state.onlyStar = false; render(); });
+    $('starOnly').onclick = () => { state.onlyStar = !state.onlyStar; render(); };
+  }
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = d => { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }); };
+
+  function render() {
+    const A = state.articles;
+    $('nAll').textContent = A.length;
+    $('nCrit').textContent = A.filter(a => a.impact_level === 'critique').length;
+    $('nHigh').textContent = A.filter(a => a.impact_level === 'élevé').length;
+    $('nMod').textContent = A.filter(a => a.impact_level === 'modéré').length;
+    document.querySelectorAll('.stat').forEach(s => s.setAttribute('aria-pressed', String(s.dataset.level === state.level)));
+    catChips();
+    const q = state.q.toLowerCase();
+    let list = A.filter(a =>
+      (!state.level || a.impact_level === state.level) &&
+      (!state.cat || a.category === state.cat) &&
+      (!state.prod || (a.products || '').includes(state.prod)) &&
+      (!state.onlyStar || state.star.has(a.url_hash)) &&
+      (!q || [a.title, a.summary, a.source, a.matched_keywords, a.category].join(' ').toLowerCase().includes(q)));
+    list.sort(state.sort === 'date'
+      ? (x, y) => new Date(y.published_at) - new Date(x.published_at)
+      : (x, y) => (y.impact_score - x.impact_score) || (new Date(y.published_at) - new Date(x.published_at)));
+    $('count').textContent = list.length + ' affiché' + (list.length > 1 ? 's' : '');
+    $('feed').innerHTML = list.length ? list.map(a => {
+      const prods = (a.products || '').split(',').map(s => s.trim()).filter(Boolean);
+      const kws = (a.matched_keywords || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 5);
+      const read = state.read.has(a.url_hash), star = state.star.has(a.url_hash);
+      return '<article class="art ' + esc(a.impact_level) + (read ? ' read' : '') + '">' +
+        '<span class="stripe" aria-hidden="true"></span>' +
+        '<div class="score"><b>' + esc(a.impact_score) + '</b><span class="lvl">' + esc(a.impact_level) + '</span></div>' +
+        '<div class="body"><div class="meta"><span class="cat">' + esc(a.category) + '</span><span>' + esc(a.source) + '</span><span class="mono">' + fmt(a.published_at) + '</span></div>' +
+        '<h3><a href="' + esc(a.url) + '" target="_blank" rel="noopener" data-open="' + esc(a.url_hash) + '">' + esc(a.title) + '</a></h3>' +
+        (a.summary ? '<p>' + esc(a.summary) + '</p>' : '') +
+        '<div class="impact">' + esc(a.impact_note) + '</div>' +
+        '<div class="tags">' + prods.map(p => '<span class="tag prod">' + esc(p) + '</span>').join('') + kws.map(k => '<span class="tag">' + esc(k) + '</span>').join('') + '</div></div>' +
+        '<div class="acts"><button type="button" data-star="' + esc(a.url_hash) + '" aria-pressed="' + star + '" aria-label="Favori">★</button>' +
+        '<button type="button" data-read="' + esc(a.url_hash) + '" aria-pressed="' + read + '">' + (read ? 'Lu' : 'Marquer lu') + '</button></div></article>';
+    }).join('') : '<div class="empty">Aucun article ne correspond à ces filtres. Élargissez la catégorie ou le niveau d\'impact.</div>';
+    $('feed').querySelectorAll('[data-star]').forEach(b => b.onclick = () => toggle('star', b.dataset.star));
+    $('feed').querySelectorAll('[data-read]').forEach(b => b.onclick = () => toggle('read', b.dataset.read));
+    $('feed').querySelectorAll('[data-open]').forEach(l => l.addEventListener('click', () => { state.read.add(l.dataset.open); store.set('hv_read', [...state.read]); setTimeout(render, 300); }));
+  }
+  function toggle(kind, id) {
+    const s = state[kind]; s.has(id) ? s.delete(id) : s.add(id);
+    store.set('hv_' + kind, [...s]); render();
+  }
+
+  document.querySelectorAll('.stat').forEach(s => s.onclick = () => { state.level = s.dataset.level; render(); });
+  $('q').oninput = e => { state.q = e.target.value; render(); };
+  $('prod').onchange = e => { state.prod = e.target.value; render(); };
+  $('sort').onchange = e => { state.sort = e.target.value; render(); };
+  $('reload').onclick = load;
+  $('saveApi').onclick = () => { store.set('hv_api', $('api').value.trim() || DEFAULT_API); $('cfgMsg').textContent = 'Adresse enregistrée. Rechargement…'; load(); };
+  $('collect').onclick = async () => {
+    const url = apiUrl().replace('hemerion-veille-articles', 'hemerion-veille-refresh');
+    $('collect').disabled = true; $('collect').textContent = 'Collecte en cours…';
+    try {
+      const r = await fetch(url, { method: 'POST' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      $('collect').textContent = 'Collecte lancée';
+      setTimeout(() => { load(); $('collect').disabled = false; $('collect').textContent = 'Lancer une collecte'; }, 20000);
+    } catch (e) {
+      $('collect').disabled = false; $('collect').textContent = 'Lancer une collecte';
+      $('cfgMsg').textContent = "Impossible de joindre le webhook n8n depuis cette page. Vérifiez que le workflow est publié, ou ouvrez la plateforme depuis GitHub Pages.";
+      document.querySelector('details.cfg').open = true;
+    }
+  };
+  load();
+})();
+</script>
