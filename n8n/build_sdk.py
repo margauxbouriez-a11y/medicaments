@@ -7,7 +7,17 @@ scoring = json.dumps((here / "code_scoring.js").read_text())
 api = json.dumps((here / "code_api.js").read_text())
 
 TABLE = "hemerion_veille_articles"
-CRED = "{ supabaseApi: { id: 'ifrGpTwuRYmzoHum', name: 'Supabase account' } }"
+TABLE_ID = "2iNDkywCKftvE4qh"  # Data Table n8n (projet personnel)
+TABLE_RL = "{ __rl: true, mode: 'id', value: '" + TABLE_ID + "', cachedResultName: '" + TABLE + "' }"
+COLUMNS = [("url_hash", "string"), ("title", "string"), ("url", "string"), ("source", "string"),
+           ("published_at", "dateTime"), ("summary", "string"), ("category", "string"), ("products", "string"),
+           ("impact_score", "number"), ("impact_level", "string"), ("impact_note", "string"),
+           ("matched_keywords", "string"), ("lang", "string"), ("is_read", "boolean"), ("is_starred", "boolean")]
+MAP_VALUE = ",\n          ".join(
+    f"{c}: false" if t == "boolean" else f"{c}: expr('{{{{ $json.{c} }}}}')" for c, t in COLUMNS)
+MAP_SCHEMA = ",\n          ".join(
+    f"{{ id: '{c}', displayName: '{c}', required: false, defaultMatch: false, display: true, type: '{t}', canBeUsedToMatch: true }}"
+    for c, t in COLUMNS)
 
 sdk = f"""import {{ workflow, node, trigger, sticky, expr }} from '@n8n/workflow-sdk';
 
@@ -39,22 +49,22 @@ const refreshHook = trigger({{
 }});
 
 const existing = node({{
-  type: 'n8n-nodes-base.supabase',
-  version: 1,
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
   config: {{
     name: 'Articles déjà en base',
     alwaysOutputData: true,
     executeOnce: true,
     parameters: {{
       resource: 'row',
-      operation: 'getAll',
-      tableId: '{TABLE}',
+      operation: 'get',
+      dataTableId: {TABLE_RL},
       returnAll: false,
       limit: 2000,
-      orderBy: 'created_at.desc',
-      filterType: 'none'
+      orderBy: true,
+      orderByColumn: 'createdAt',
+      orderByDirection: 'DESC'
     }},
-    credentials: {CRED},
     position: [260, 300]
   }},
   output: [{{ url_hash: 'a1b2c3d4' }}]
@@ -99,21 +109,30 @@ const scoring = node({{
 }});
 
 const save = node({{
-  type: 'n8n-nodes-base.supabase',
-  version: 1,
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
   config: {{
-    name: 'Enregistrer dans Supabase',
+    name: 'Enregistrer dans la table',
     onError: 'continueRegularOutput',
     parameters: {{
       resource: 'row',
-      operation: 'create',
-      tableId: '{TABLE}',
-      dataToSend: 'autoMapInputData'
+      operation: 'insert',
+      dataTableId: {TABLE_RL},
+      columns: {{
+        mappingMode: 'defineBelow',
+        value: {{
+          {MAP_VALUE}
+        }},
+        matchingColumns: [],
+        schema: [
+          {MAP_SCHEMA}
+        ]
+      }},
+      options: {{}}
     }},
-    credentials: {CRED},
     position: [1300, 300]
   }},
-  output: [{{ id: 1, url_hash: 'a1b2c3d4', created_at: '2026-10-21T12:00:00.000Z' }}]
+  output: [{{ id: 1, url_hash: 'a1b2c3d4', createdAt: '2026-10-21T12:00:00.000Z' }}]
 }});
 
 const apiHook = trigger({{
@@ -133,21 +152,21 @@ const apiHook = trigger({{
 }});
 
 const readArticles = node({{
-  type: 'n8n-nodes-base.supabase',
-  version: 1,
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
   config: {{
     name: 'Lire les articles',
     alwaysOutputData: true,
     parameters: {{
       resource: 'row',
-      operation: 'getAll',
-      tableId: '{TABLE}',
+      operation: 'get',
+      dataTableId: {TABLE_RL},
       returnAll: false,
       limit: 500,
-      orderBy: 'published_at.desc',
-      filterType: 'none'
+      orderBy: true,
+      orderByColumn: 'published_at',
+      orderByDirection: 'DESC'
     }},
-    credentials: {CRED},
     position: [260, 700]
   }},
   output: [{{ id: 1, url_hash: 'a1b2c3d4', title: 'Hemerion receives FDA feedback', impact_score: 100 }}]
@@ -184,7 +203,7 @@ const respond = node({{
   output: [{{ ok: true }}]
 }});
 
-const note = sticky('## Veille pharma Hemerion\\n\\n**Collecte** (toutes les 6 h ou `POST /webhook/hemerion-veille-refresh`) : 21 flux RSS (Google News FR/EN + FDA) → score d’impact sur Pentalafen® / Heliance® → déduplication → table Supabase `{TABLE}`.\\n\\n**API** : `GET /webhook/hemerion-veille-articles?min_score=50&category=Réglementaire` renvoie le JSON lu par la plateforme.\\n\\nPrérequis : exécuter `supabase/schema.sql` dans le SQL editor Supabase.', [], {{ color: 5, position: [-20, -160], width: 760, height: 300 }});
+const note = sticky('## Veille pharma Hemerion\\n\\n**Collecte** (toutes les 6 h ou `POST /webhook/hemerion-veille-refresh`) : 21 flux RSS (Google News FR/EN + FDA) → score d’impact sur Pentalafen® / Heliance® → déduplication → Data Table n8n `{TABLE}`.\\n\\n**API** : `GET /webhook/hemerion-veille-articles?min_score=50&category=Réglementaire` renvoie le JSON lu par la plateforme.', [], {{ color: 5, position: [-20, -160], width: 760, height: 300 }});
 
 export default workflow('hemerion-veille', 'Hemerion – Veille actualités pharma')
   .add(schedule)
@@ -200,7 +219,7 @@ export default workflow('hemerion-veille', 'Hemerion – Veille actualités phar
   .to(shape)
   .to(respond)
   .add(note)
-  .group('Collecte et scoring', [existing, sources, readRss, scoring, save], {{ description: 'Lit les flux RSS ciblés, score l’impact sur Hemerion, déduplique et enregistre les nouveaux articles dans Supabase' }})
+  .group('Collecte et scoring', [existing, sources, readRss, scoring, save], {{ description: 'Lit les flux RSS ciblés, score l’impact sur Hemerion, déduplique et enregistre les nouveaux articles dans la Data Table' }})
   .group('API de lecture', [readArticles, shape, respond], {{ description: 'Renvoie les articles stockés (JSON + CORS) pour la plateforme de veille' }});
 """
 (here / "workflow.sdk.ts").write_text(sdk)

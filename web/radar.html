@@ -203,7 +203,7 @@ footer { color: var(--muted); font-size: 13px }
       <input id="api" type="url" aria-label="URL de l'API articles" placeholder="https://…/webhook/hemerion-veille-articles">
       <button id="saveApi" type="button">Enregistrer</button>
     </div>
-    <p class="msg" id="cfgMsg">Le workflow n8n collecte 21 flux toutes les 6 h, score l'impact et stocke les articles dans Supabase. Cette page lit l'API GET ; sans connexion, elle affiche le dernier instantané.</p>
+    <p class="msg" id="cfgMsg">Le workflow n8n collecte 21 flux toutes les 6 h, score l'impact et stocke les articles dans une table n8n. Cette page lit l'API GET ; sans connexion, elle affiche le dernier instantané.</p>
   </details>
 
   <footer>Score d'impact 0–100 : mention directe d'Hemerion (+100), glioblastome (+35), PDT / 5-ALA (+35), concurrents identifiés (+25), réglementaire orphelin / MDR / produits combinés (+15 à +25). Articles lus et favoris enregistrés dans ce navigateur.</footer>

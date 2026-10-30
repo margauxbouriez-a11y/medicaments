@@ -13,16 +13,16 @@ Essai HTX-GBM01 (phase 1/2, UPMC Pittsburgh + CHU de Lille) : inclusions termin�
 
 ```
 Planificateur (toutes les 6 h) ─┐
-Webhook POST /hemerion-veille-refresh ─┴─► Supabase : articles déjà vus
+Webhook POST /hemerion-veille-refresh ─┴─► Data Table n8n : articles déjà vus
                                              └─► 21 flux RSS (Google News FR/EN + FDA)
                                                   └─► Score d'impact + catégorie + produit + déduplication
-                                                       └─► Supabase : hemerion_veille_articles
+                                                       └─► Data Table n8n : hemerion_veille_articles
 
-Webhook GET /hemerion-veille-articles ─► Supabase ─► JSON (CORS) ─► plateforme web
+Webhook GET /hemerion-veille-articles ─► Data Table n8n ─► JSON (CORS) ─► plateforme web
 ```
 
 - **Workflow n8n** : « Hemerion – Veille actualités pharma » (`n8n/workflow.sdk.ts`, nœuds Code dans `n8n/*.js`)
-- **Base** : `supabase/schema.sql` (table, index plein texte, RLS lecture seule, vue de statistiques)
+- **Stockage** : Data Table n8n `hemerion_veille_articles` (aucune base externe ; colonnes : url_hash, title, url, source, published_at, summary, category, products, impact_score, impact_level, impact_note, matched_keywords, lang, is_read, is_starred)
 - **Plateforme** : `index.html` (GitHub Pages) — lit l'API n8n, sinon l'instantané embarqué (`data/articles.json`)
 
 ### Axes de veille et score d'impact (0–100)
@@ -39,10 +39,9 @@ Niveaux : **critique** ≥ 80, **élevé** ≥ 50, **modéré** ≥ 30. Seuls le
 
 ## Mise en route
 
-1. **Supabase** : ouvrir le SQL Editor du projet relié au credential n8n « Supabase account » et exécuter `supabase/schema.sql`.
-2. **n8n** : le workflow est publié. Lancer une première collecte : `curl -X POST https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-refresh`
-3. **Vérifier l'API** : `https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-articles?min_score=50` (paramètre optionnel `category=Réglementaire`)
-4. **Plateforme** : activer GitHub Pages (Settings → Pages → branche `main`, dossier racine). La page bascule automatiquement de « Instantané » à « En direct » dès que l'API répond.
+1. **n8n** : le workflow est publié et la Data Table `hemerion_veille_articles` existe déjà (menu *Data tables* du projet). Lancer une collecte : `curl -X POST https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-refresh`
+2. **Vérifier l'API** : `https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-articles?min_score=50` (paramètre optionnel `category=Réglementaire`)
+3. **Plateforme** : activer GitHub Pages (Settings → Pages → branche `main`, dossier racine). La page bascule automatiquement de « Instantané » à « En direct » dès que l'API répond.
 
 ## Modifier la veille
 
@@ -52,6 +51,8 @@ Niveaux : **critique** ≥ 80, **élevé** ≥ 50, **modéré** ≥ 30. Seuls le
 - Régénérer la page après mise à jour de l'instantané : `python3 web/build.py`
 
 ## Pistes d'extension
+
+- Purge des articles de plus de 180 jours : planificateur quotidien + nœud Data table « Delete row(s) » filtré sur `published_at` (les Data Tables ont une limite de stockage)
 
 - Résumé et note d'impact rédigés par Claude (nœud Anthropic de n8n) pour les articles ≥ 50
 - Alerte Gmail quotidienne pour les articles « critique » (credential Gmail déjà présent dans n8n)

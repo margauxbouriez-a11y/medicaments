@@ -1,5 +1,5 @@
 // Normalise les articles RSS, calcule un score d'impact pour Hemerion, déduplique
-// (dans le lot et contre ce qui est déjà dans Supabase) et ne garde que l'essentiel.
+// (dans le lot et contre ce qui est déjà dans la Data Table) et ne garde que l'essentiel.
 let existing = [];
 try {
   existing = $('Articles déjà en base').all().map(i => i.json.url_hash).filter(Boolean);

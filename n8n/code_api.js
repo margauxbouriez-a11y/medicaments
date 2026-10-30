@@ -20,6 +20,6 @@ const articles = rows
     impact_level: r.impact_level,
     impact_note: r.impact_note,
     matched_keywords: r.matched_keywords,
-    created_at: r.created_at
+    created_at: r.created_at || r.createdAt
   }));
 return [{ json: { generated_at: new Date().toISOString(), count: articles.length, articles } }];
