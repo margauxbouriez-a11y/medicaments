@@ -210,6 +210,39 @@ const respond = node({
   output: [{ ok: true }]
 });
 
+const nightly = trigger({
+  type: 'n8n-nodes-base.scheduleTrigger',
+  version: 1.4,
+  config: {
+    name: 'Chaque nuit à 3h',
+    parameters: { rule: { interval: [{ field: 'days', daysInterval: 1, triggerAtHour: 3, triggerAtMinute: 17 }] } },
+    position: [0, 1000]
+  },
+  output: [{}]
+});
+
+const purge = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Supprimer les articles de plus de 180 jours',
+    alwaysOutputData: true,
+    parameters: {
+      resource: 'row',
+      operation: 'deleteRows',
+      dataTableId: { __rl: true, mode: 'id', value: '2iNDkywCKftvE4qh', cachedResultName: 'hemerion_veille_articles' },
+      matchType: 'allConditions',
+      filters: { conditions: [
+        { keyName: 'published_at', condition: 'lt', keyValue: expr('{{ $now.minus({ days: 180 }).toISO() }}') },
+        { keyName: 'is_starred', condition: 'isFalse' }
+      ] },
+      options: {}
+    },
+    position: [260, 1000]
+  },
+  output: [{ id: 1 }]
+});
+
 const note = sticky('## Veille pharma Hemerion\n\n**Collecte** (toutes les 6 h ou `POST /webhook/hemerion-veille-refresh`) : 21 flux RSS (Google News FR/EN + FDA) → score d’impact sur Pentalafen® / Heliance® → déduplication → Data Table n8n `hemerion_veille_articles`.\n\n**API** : `GET /webhook/hemerion-veille-articles?min_score=50&category=Réglementaire` renvoie le JSON lu par la plateforme.', [], { color: 5, position: [-20, -160], width: 760, height: 300 });
 
 export default workflow('hemerion-veille', 'Hemerion – Veille actualités pharma')
@@ -225,6 +258,9 @@ export default workflow('hemerion-veille', 'Hemerion – Veille actualités phar
   .to(readArticles)
   .to(shape)
   .to(respond)
+  .add(nightly)
+  .to(purge)
   .add(note)
   .group('Collecte et scoring', [existing, sources, readRss, scoring, save], { description: 'Lit les flux RSS ciblés, score l’impact sur Hemerion, déduplique et enregistre les nouveaux articles dans la Data Table' })
-  .group('API de lecture', [readArticles, shape, respond], { description: 'Renvoie les articles stockés (JSON + CORS) pour la plateforme de veille' });
+  .group('API de lecture', [readArticles, shape, respond], { description: 'Renvoie les articles stockés (JSON + CORS) pour la plateforme de veille' })
+  .group('Purge', [purge], { description: 'Chaque nuit, supprime les articles publiés il y a plus de 180 jours (sauf ceux marqués comme favoris)' });

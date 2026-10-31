@@ -19,6 +19,8 @@ Webhook POST /hemerion-veille-refresh ─┴─► Data Table n8n : articles dé
                                                        └─► Data Table n8n : hemerion_veille_articles
 
 Webhook GET /hemerion-veille-articles ─► Data Table n8n ─► JSON (CORS) ─► plateforme web
+
+Chaque nuit à 3 h ─► supprime les articles publiés il y a plus de 180 jours (sauf favoris)
 ```
 
 - **Workflow n8n** : « Hemerion – Veille actualités pharma » (`n8n/workflow.sdk.ts`, nœuds Code dans `n8n/*.js`)
@@ -52,7 +54,6 @@ Niveaux : **critique** ≥ 80, **élevé** ≥ 50, **modéré** ≥ 30. Seuls le
 
 ## Pistes d'extension
 
-- Purge des articles de plus de 180 jours : planificateur quotidien + nœud Data table « Delete row(s) » filtré sur `published_at` (les Data Tables ont une limite de stockage)
 
 - Résumé et note d'impact rédigés par Claude (nœud Anthropic de n8n) pour les articles ≥ 50
 - Alerte Gmail quotidienne pour les articles « critique » (credential Gmail déjà présent dans n8n)
