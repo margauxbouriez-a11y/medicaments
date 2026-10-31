@@ -14,16 +14,22 @@ Essai HTX-GBM01 (phase 1/2, UPMC Pittsburgh + CHU de Lille) : inclusions termin�
 ```
 Planificateur (toutes les 6 h) ─┐
 Webhook POST /hemerion-veille-refresh ─┴─► Data Table n8n : articles déjà vus
-                                             └─► 21 flux RSS (Google News FR/EN + FDA)
+                                             └─► Data Table n8n : hemerion_veille_sources (axes + requêtes)
+                                                  └─► flux RSS actifs (Google News FR/EN + flux directs, ex. FDA)
                                                   └─► Score d'impact + catégorie + produit + déduplication
                                                        └─► Data Table n8n : hemerion_veille_articles
 
 Webhook GET /hemerion-veille-articles ─► Data Table n8n ─► JSON (CORS) ─► plateforme web
 
 Chaque nuit à 3 h ─► supprime les articles publiés il y a plus de 180 jours (sauf favoris)
+
+Webhook GET  /hemerion-veille-sources      ─► liste des axes et requêtes (onglet « Sources de veille »)
+Webhook POST /hemerion-veille-sources-save ─► vérifie la clé d'édition ─► remplace hemerion_veille_sources
 ```
 
 - **Workflow n8n** : « Hemerion – Veille actualités pharma » (`n8n/workflow.sdk.ts`, nœuds Code dans `n8n/*.js`)
+- **Sources** : Data Table n8n `hemerion_veille_sources` (colonnes : position, axe, label, query, url, lang, active), éditée depuis l'onglet **Sources de veille** de la plateforme. Si la table est vide, le workflow utilise la liste par défaut de `n8n/code_sources.js`. Instantané pour la page : `data/sources.json`.
+- **Clé d'édition** : Data Table n8n `hemerion_veille_reglages` (ligne `cle = edit_key`). Elle n'est jamais stockée dans ce dépôt public ; pour la changer, modifier la valeur dans n8n (menu *Data tables*).
 - **Stockage** : Data Table n8n `hemerion_veille_articles` (aucune base externe ; colonnes : url_hash, title, url, source, published_at, summary, category, products, impact_score, impact_level, impact_note, matched_keywords, lang, is_read, is_starred)
 - **Plateforme** : `index.html` (GitHub Pages) — lit l'API n8n, sinon l'instantané embarqué (`data/articles.json`)
 
@@ -47,10 +53,12 @@ Niveaux : **critique** ≥ 80, **élevé** ≥ 50, **modéré** ≥ 30. Seuls le
 
 ## Modifier la veille
 
-- Ajouter / retirer des sources : `n8n/code_sources.js`
+- **Ajouter / modifier / désactiver des sources** : onglet **Sources de veille** de la plateforme (`index.html#sources`). Chaque ligne est une recherche Google News (30 derniers jours) ou un flux RSS direct, rangée dans un axe. *Enregistrer dans n8n* demande la clé d'édition ; la nouvelle liste est utilisée dès la collecte suivante (bouton *Lancer une collecte maintenant*). Le bouton *Tester* ouvre les résultats actuels de la recherche.
+- L'axe sert à organiser les recherches ; la catégorie affichée sur chaque article reste calculée par les mots-clés du score. Un article trouvé par une nouvelle recherche n'est gardé que s'il atteint 30 points.
+- Liste de secours (table vide) : `DEFAULTS` dans `n8n/code_sources.js`
 - Ajuster les mots-clés et les poids : tableau `RULES` dans `n8n/code_scoring.js`
 - Régénérer le code SDK : `python3 n8n/build_sdk.py`, puis mettre à jour le nœud correspondant dans n8n
-- Régénérer la page après mise à jour de l'instantané : `python3 web/build.py`
+- Régénérer la page après mise à jour des instantanés (`data/articles.json`, `data/sources.json`) : `python3 web/build.py`
 
 ## Pistes d'extension
 

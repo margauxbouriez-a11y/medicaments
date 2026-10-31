@@ -114,6 +114,64 @@ details.cfg input { flex: 1 1 320px; min-width: 0 }
 .msg { font-size: 14px; color: var(--muted); margin: 8px 0 0 }
 footer { color: var(--muted); font-size: 13px }
 
+/* Onglets */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: -8px }
+.tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); padding: 10px 14px; margin-bottom: -1px }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--laser) }
+.tabs .mono { font-size: 12px; color: var(--muted) }
+.view { display: grid; gap: 22px } .view[hidden] { display: none }
+
+/* Espace Sources */
+.src-intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 28px; align-items: end }
+.src-intro h2 { font-size: 24px; font-weight: 700; margin-bottom: 6px }
+.src-intro p { margin: 0; color: var(--muted); max-width: 72ch }
+.src-stats { display: flex; gap: 22px }
+.src-stats div { display: grid; gap: 6px }
+.src-stats b { font: 700 26px/1 var(--f-display) }
+.src-stats .small { font-size: 13px; line-height: 26px }
+.src-alert { margin: 0; padding: 10px 14px; border-radius: 8px; background: var(--high-bg); color: var(--ink); font-size: 14px }
+.src-alert.ok { background: var(--mod-bg) }
+.axes { display: grid; gap: 14px }
+.axe { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden }
+.axe-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line) }
+.axe-head input { font: 700 18px/1.2 var(--f-display); color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 4px 6px; margin-left: -6px; flex: 1 1 240px; min-width: 0 }
+.axe-head input:hover { border-color: var(--line) } .axe-head input:focus { border-color: var(--laser); outline: none; background: var(--bg) }
+.axe-head .mono { color: var(--muted); font-size: 12px }
+.axe-head button { padding: 6px 10px; font-size: 13px; background: transparent }
+.srow { display: grid; grid-template-columns: 34px minmax(190px, 1.1fr) 132px minmax(0, 2fr) 72px auto; gap: 8px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line) }
+.srow:last-of-type { border-bottom: 0 }
+.srow.off > :not(.tog) { opacity: .5 }
+.srow input[type="text"], .srow select { font: 14px var(--f-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; min-width: 0; width: 100% }
+.srow input.q { font-family: var(--f-mono); font-size: 13px }
+.srow .acts2 { display: flex; gap: 4px }
+.srow .acts2 a, .srow .acts2 button { font-size: 13px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); text-decoration: none; line-height: 1 }
+.srow .acts2 button:hover { color: var(--crit); border-color: var(--crit) }
+.srow.new { box-shadow: inset 3px 0 0 var(--laser) }
+.tog { position: relative; width: 34px; height: 20px }
+.tog input { position: absolute; inset: 0; z-index: 1; opacity: 0; margin: 0; cursor: pointer }
+.tog span { position: absolute; inset: 0; border-radius: 999px; background: var(--line); transition: background .15s }
+.tog span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); transition: transform .15s }
+.tog input:checked + span { background: var(--laser) } .tog input:checked + span::after { transform: translateX(14px) }
+.tog input:focus-visible + span { outline: 2px solid var(--laser); outline-offset: 2px }
+.add-row { display: block; width: 100%; text-align: left; border: 0; border-top: 1px dashed var(--line); border-radius: 0; background: transparent; color: var(--muted); padding: 10px 16px; font-size: 14px }
+.add-row:hover, .add-axe:hover { color: var(--laser) }
+.add-axe { justify-self: start; background: transparent; border-style: dashed; color: var(--muted) }
+.savebar { position: sticky; bottom: max(12px, env(safe-area-inset-bottom, 0px)); z-index: 6; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 10px 12px 10px 16px; box-shadow: 0 6px 24px rgba(0,0,0,.18) }
+.savebar[hidden] { display: none }
+.savebar .spacer { flex: 1 }
+.savebar button:not(.primary) { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 35%, transparent) }
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 20px; width: min(420px, calc(100vw - 32px)) }
+dialog::backdrop { background: rgba(10, 14, 20, .45) }
+dialog form { display: grid; gap: 12px } dialog h3 { font-size: 20px } dialog p { margin: 0; color: var(--muted); font-size: 14px }
+dialog input[type="password"] { font: 15px var(--f-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px }
+.row.end { justify-content: flex-end }
+@media (max-width: 860px) {
+  .src-intro { grid-template-columns: 1fr }
+  .srow { grid-template-columns: 34px minmax(0, 1fr) 100px; grid-template-areas: "t l k" "q q q" "g g a"; padding-block: 12px }
+  .srow > .tog { grid-area: t } .srow > .lbl { grid-area: l } .srow > .kind { grid-area: k } .srow > .q { grid-area: q } .srow > .lang { grid-area: g; width: 80px } .srow > .acts2 { grid-area: a; justify-self: end }
+}
+
 @media (max-width: 860px) {
   .context { grid-template-columns: 1fr } .context > div + div { border-left: 0; border-top: 1px solid var(--line) }
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)) }
@@ -139,6 +197,12 @@ footer { color: var(--muted); font-size: 13px }
     </div>
   </header>
 
+  <nav class="tabs" role="tablist" aria-label="Espaces de la plateforme">
+    <button type="button" role="tab" id="tabFeed" aria-selected="true" aria-controls="viewFeed">Fil d'actualités</button>
+    <button type="button" role="tab" id="tabSrc" aria-selected="false" aria-controls="viewSrc">Sources de veille <span class="mono" id="srcCount"></span></button>
+  </nav>
+
+  <div class="view" id="viewFeed" role="tabpanel" aria-labelledby="tabFeed">
   <section class="summary" aria-label="Synthèse par niveau d'impact">
     <button class="stat" data-level="" type="button" aria-pressed="true"><span class="label">Articles suivis</span><b class="mono" id="nAll">0</b></button>
     <button class="stat crit" data-level="critique" type="button" aria-pressed="false"><span class="label">Impact critique</span><b class="mono" id="nCrit">0</b></button>
@@ -196,6 +260,44 @@ footer { color: var(--muted); font-size: 13px }
   </section>
 
   <section class="feed" id="feed" aria-live="polite"></section>
+  </div>
+
+  <div class="view" id="viewSrc" role="tabpanel" aria-labelledby="tabSrc" hidden>
+    <section class="src-intro">
+      <div>
+        <h2>Ce que la veille va chercher</h2>
+        <p>Chaque ligne est une recherche Google News (articles des 30 derniers jours) ou un flux RSS direct. À chaque collecte, n8n interroge les lignes actives. Les articles trouvés passent ensuite par le score d'impact par mots-clés : seuls ceux qui atteignent 30 sont gardés.</p>
+      </div>
+      <div class="src-stats">
+        <div><span class="label">Axes</span><b class="mono" id="sAxes">–</b></div>
+        <div><span class="label">Recherches actives</span><b class="mono" id="sActive">–</b></div>
+        <div><span class="label">Mise à jour</span><span class="mono small" id="sUpdated">–</span></div>
+      </div>
+    </section>
+    <p class="src-alert" id="srcAlert" hidden></p>
+    <div class="axes" id="axes" aria-live="polite"></div>
+    <button type="button" class="add-axe" id="addAxe">+ Nouvel axe de veille</button>
+    <div class="savebar" id="savebar" hidden>
+      <span id="dirtyTxt">Modifications non enregistrées</span>
+      <span class="spacer"></span>
+      <button type="button" id="undoSrc">Annuler</button>
+      <button type="button" class="primary" id="saveSrc">Enregistrer dans n8n</button>
+    </div>
+  </div>
+
+  <dialog id="keyDlg" aria-labelledby="keyTitle">
+    <form method="dialog" id="keyForm">
+      <h3 id="keyTitle">Clé d'édition</h3>
+      <p>Les sources pilotent directement le workflow n8n : la clé évite qu'un visiteur de la page les modifie.</p>
+      <input id="keyInput" type="password" autocomplete="current-password" aria-label="Clé d'édition" required>
+      <label class="check"><input type="checkbox" id="keyRemember" checked> Se souvenir sur cet appareil</label>
+      <p class="msg" id="keyMsg"></p>
+      <div class="row end">
+        <button type="button" id="keyCancel">Annuler</button>
+        <button type="submit" class="primary" id="keyOk">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
 
   <details class="cfg">
     <summary>Connexion à l'automatisation n8n</summary>
@@ -210,6 +312,7 @@ footer { color: var(--muted); font-size: 13px }
 </div>
 
 <script id="snapshot" type="application/json">__SNAPSHOT__</script>
+<script id="sourcesSnap" type="application/json">__SOURCES__</script>
 <script>
 (function () {
   const DEFAULT_API = 'https://margauxbouriez2.app.n8n.cloud/webhook/hemerion-veille-articles';
@@ -325,5 +428,162 @@ footer { color: var(--muted); font-size: 13px }
     }
   };
   load();
+
+  /* ---------- Espace « Sources de veille » ---------- */
+  const srcApi = () => apiUrl().replace('hemerion-veille-articles', 'hemerion-veille-sources');
+  const saveApi = () => apiUrl().replace('hemerion-veille-articles', 'hemerion-veille-sources-save');
+  const srcSnap = JSON.parse($('sourcesSnap').textContent);
+  const S = { list: [], saved: '[]', live: false, uid: 0, updated: null };
+  const toRow = s => ({ id: ++S.uid, axe: s.axe || 'Autre', label: s.label || '', query: s.query || '', url: s.url || '',
+    lang: s.lang === 'fr' ? 'fr' : 'en', active: s.active !== false, kind: s.url && !s.query ? 'rss' : 'gn', fresh: false });
+  const strip = list => list.map(r => ({ axe: r.axe.trim() || 'Autre', label: r.label.trim(), query: r.kind === 'gn' ? r.query.trim() : '',
+    url: r.kind === 'rss' ? r.url.trim() : '', lang: r.lang, active: r.active })).filter(r => r.query || r.url);
+  const axesOf = () => [...new Set(S.list.map(r => r.axe))];
+  const ordered = () => axesOf().flatMap(ax => S.list.filter(r => r.axe === ax));
+  const sig = () => JSON.stringify(strip(ordered()));
+  const testUrl = r => r.kind === 'rss' ? r.url : 'https://news.google.com/search?q=' + encodeURIComponent(r.query + ' when:30d') +
+    (r.lang === 'fr' ? '&hl=fr&gl=FR&ceid=FR:fr' : '&hl=en-US&gl=US&ceid=US:en');
+
+  function alertSrc(html, ok) { const a = $('srcAlert'); a.hidden = !html; a.className = 'src-alert' + (ok ? ' ok' : ''); a.innerHTML = html || ''; }
+
+  async function loadSources() {
+    try {
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(srcApi(), { signal: ctrl.signal, cache: 'no-store' }); clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (!d || !Array.isArray(d.sources) || !d.sources.length) throw new Error('vide');
+      S.list = d.sources.map(toRow); S.live = true; S.updated = d.updated_at; alertSrc('');
+    } catch (e) {
+      S.list = srcSnap.sources.map(toRow); S.live = false; S.updated = srcSnap.generated_at;
+      alertSrc("Impossible de joindre n8n : la liste affichée est l'instantané du dépôt, en lecture seule. Vérifiez que le workflow est publié puis rechargez la page.");
+    }
+    S.saved = sig(); renderSources();
+  }
+
+  function stats() {
+    const act = S.list.filter(r => r.active && (r.query.trim() || r.url.trim())).length;
+    $('sAxes').textContent = axesOf().length; $('sActive').textContent = act;
+    $('srcCount').textContent = act;
+    $('sUpdated').textContent = S.updated ? new Date(S.updated).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '–';
+    const dirty = S.live && sig() !== S.saved;
+    $('savebar').hidden = !dirty;
+  }
+
+  function rowHtml(r) {
+    const dis = S.live ? '' : ' disabled';
+    return '<div class="srow' + (r.active ? '' : ' off') + (r.fresh ? ' new' : '') + '" data-id="' + r.id + '">' +
+      '<label class="tog" title="Interroger cette source à chaque collecte"><input type="checkbox" data-f="active"' + (r.active ? ' checked' : '') + dis + ' aria-label="Source active"><span></span></label>' +
+      '<input type="text" class="lbl" data-f="label" value="' + esc(r.label) + '" placeholder="Nom de la recherche" aria-label="Nom"' + dis + '>' +
+      '<select class="kind" data-f="kind" aria-label="Type de source"' + dis + '><option value="gn"' + (r.kind === 'gn' ? ' selected' : '') + '>Google News</option><option value="rss"' + (r.kind === 'rss' ? ' selected' : '') + '>Flux RSS</option></select>' +
+      '<input type="text" class="q" data-f="' + (r.kind === 'rss' ? 'url' : 'query') + '" value="' + esc(r.kind === 'rss' ? r.url : r.query) + '" placeholder="' +
+        (r.kind === 'rss' ? 'https://… adresse du flux RSS' : 'mots-clés : glioblastoma OR "5-ALA"') + '" aria-label="' + (r.kind === 'rss' ? 'Adresse du flux' : 'Requête') + '" spellcheck="false"' + dis + '>' +
+      '<select class="lang" data-f="lang" aria-label="Langue"' + dis + (r.kind === 'rss' ? ' title="Indicatif pour un flux direct"' : '') + '><option value="fr"' + (r.lang === 'fr' ? ' selected' : '') + '>FR</option><option value="en"' + (r.lang === 'en' ? ' selected' : '') + '>EN</option></select>' +
+      '<span class="acts2"><a href="' + esc(testUrl(r)) + '" target="_blank" rel="noopener" data-test title="Voir les résultats actuels de cette recherche">Tester</a>' +
+      (S.live ? '<button type="button" data-del aria-label="Supprimer cette recherche" title="Supprimer">✕</button>' : '') + '</span></div>';
+  }
+
+  function renderSources() {
+    const groups = axesOf();
+    $('axes').innerHTML = groups.map(ax => {
+      const rows = S.list.filter(r => r.axe === ax);
+      const act = rows.filter(r => r.active).length;
+      return '<section class="axe" data-axe="' + esc(ax) + '">' +
+        '<div class="axe-head"><input type="text" data-axe-name value="' + esc(ax) + '" aria-label="Nom de l\'axe"' + (S.live ? '' : ' disabled') + '>' +
+        '<span class="mono">' + act + ' / ' + rows.length + ' actives</span>' +
+        (S.live ? '<button type="button" data-del-axe>Supprimer l\'axe</button>' : '') + '</div>' +
+        rows.map(rowHtml).join('') +
+        (S.live ? '<button type="button" class="add-row" data-add>+ Ajouter une recherche dans cet axe</button>' : '') + '</section>';
+    }).join('');
+    $('addAxe').hidden = !S.live;
+    stats();
+  }
+
+  const rowById = id => S.list.find(r => r.id === Number(id));
+  $('axes').addEventListener('input', e => {
+    const el = e.target, wrap = el.closest('.srow'); if (!wrap || !el.dataset.f) return;
+    const r = rowById(wrap.dataset.id); const f = el.dataset.f;
+    if (f === 'active') { r.active = el.checked; wrap.classList.toggle('off', !r.active); }
+    else if (f !== 'kind') r[f] = el.value;
+    const t = wrap.querySelector('[data-test]'); if (t) t.href = testUrl(r);
+    stats();
+  });
+  $('axes').addEventListener('change', e => {
+    const el = e.target;
+    if (el.dataset.f === 'kind') { const r = rowById(el.closest('.srow').dataset.id); r.kind = el.value; renderSources(); return; }
+    if ('axeName' in el.dataset) {
+      const old = el.closest('.axe').dataset.axe, name = el.value.trim();
+      if (!name) { el.value = old; return; }
+      // Renommer vers un axe existant fusionne les deux groupes (l'affichage regroupe par nom d'axe).
+      S.list.forEach(r => { if (r.axe === old) r.axe = name; });
+      renderSources();
+    }
+  });
+  $('axes').addEventListener('click', e => {
+    const el = e.target;
+    if ('del' in el.dataset) {
+      const r = rowById(el.closest('.srow').dataset.id);
+      S.list = S.list.filter(x => x !== r); renderSources();
+    } else if ('add' in el.dataset) {
+      const ax = el.closest('.axe').dataset.axe;
+      const last = S.list.map(r => r.axe).lastIndexOf(ax);
+      const r = toRow({ axe: ax, lang: 'en', active: true }); r.fresh = true;
+      S.list.splice(last + 1, 0, r); renderSources();
+      const inp = document.querySelector('.srow[data-id="' + r.id + '"] .q'); if (inp) inp.focus();
+    } else if ('delAxe' in el.dataset) {
+      const ax = el.closest('.axe').dataset.axe, n = S.list.filter(r => r.axe === ax).length;
+      if (n && !confirm('Supprimer l\'axe « ' + ax + ' » et ses ' + n + ' recherche(s) ?')) return;
+      S.list = S.list.filter(r => r.axe !== ax); renderSources();
+    }
+  });
+  $('addAxe').onclick = () => {
+    let name = 'Nouvel axe', i = 2; while (axesOf().includes(name)) name = 'Nouvel axe ' + i++;
+    const r = toRow({ axe: name, lang: 'en', active: true }); r.fresh = true;
+    S.list.push(r); renderSources();
+    const sec = [...document.querySelectorAll('.axe')].pop(); const inp = sec && sec.querySelector('[data-axe-name]');
+    if (inp) { inp.focus(); inp.select(); sec.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  };
+  $('undoSrc').onclick = () => { const keep = JSON.parse(S.saved); S.list = keep.map(toRow); renderSources(); };
+
+  async function postSources(key) {
+    const body = new URLSearchParams({ key, sources: JSON.stringify(strip(ordered())) });
+    const r = await fetch(saveApi(), { method: 'POST', body });
+    let d = {}; try { d = await r.json(); } catch (e) {}
+    if (!r.ok || !d.ok) { const err = new Error(d.error || ('Erreur HTTP ' + r.status)); err.status = r.status; throw err; }
+    return d;
+  }
+  async function doSave(key, remember) {
+    $('saveSrc').disabled = true; $('saveSrc').textContent = 'Enregistrement…';
+    try {
+      const d = await postSources(key);
+      if (remember) store.set('hv_key', key);
+      if ($('keyDlg').open) $('keyDlg').close();
+      await loadSources();
+      alertSrc(esc(d.message) + ' <button type="button" id="collectNow">Lancer une collecte maintenant</button>', true);
+      $('collectNow').onclick = () => { $('collect').click(); alertSrc('Collecte lancée avec les nouvelles sources : les articles apparaîtront dans le fil d\'ici une minute.', true); };
+    } catch (e) {
+      if (e.status === 403) { store.set('hv_key', ''); openKey('Clé incorrecte. Réessayez.'); }
+      else if ($('keyDlg').open) $('keyMsg').textContent = e.message;
+      else alertSrc('Enregistrement impossible : ' + esc(e.message));
+    } finally { $('saveSrc').disabled = false; $('saveSrc').textContent = 'Enregistrer dans n8n'; }
+  }
+  function openKey(msg) {
+    $('keyMsg').textContent = msg || ''; $('keyInput').value = '';
+    if (!$('keyDlg').open) $('keyDlg').showModal(); $('keyInput').focus();
+  }
+  $('saveSrc').onclick = () => { const k = store.get('hv_key', ''); k ? doSave(k, true) : openKey(); };
+  $('keyForm').onsubmit = e => { e.preventDefault(); doSave($('keyInput').value.trim(), $('keyRemember').checked); };
+  $('keyCancel').onclick = () => $('keyDlg').close();
+  window.addEventListener('beforeunload', e => { if (S.live && sig() !== S.saved) { e.preventDefault(); e.returnValue = ''; } });
+
+  function showTab(src) {
+    $('tabFeed').setAttribute('aria-selected', String(!src)); $('tabSrc').setAttribute('aria-selected', String(src));
+    $('viewFeed').hidden = src; $('viewSrc').hidden = !src;
+    try { history.replaceState(null, '', src ? '#sources' : location.pathname + location.search); } catch (e) {}
+  }
+  $('tabFeed').onclick = () => showTab(false);
+  $('tabSrc').onclick = () => showTab(true);
+  if (location.hash === '#sources') showTab(true);
+  loadSources();
 })();
 </script>

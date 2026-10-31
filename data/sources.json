@@ -1,0 +1,173 @@
+{
+ "generated_at": "2026-10-31T14:21:29Z",
+ "sources": [
+  {
+   "axe": "Hemerion & produits",
+   "label": "Hemerion (EN)",
+   "query": "Hemerion",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Hemerion & produits",
+   "label": "Hemerion (FR)",
+   "query": "Hemerion",
+   "url": "",
+   "lang": "fr",
+   "active": true
+  },
+  {
+   "axe": "Hemerion & produits",
+   "label": "Pentalafen / Heliance",
+   "query": "Pentalafen OR Heliance photodynamic",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Technologie PDT / 5-ALA",
+   "label": "PDT glioblastome (EN)",
+   "query": "photodynamic therapy glioblastoma",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Technologie PDT / 5-ALA",
+   "label": "PDT glioblastome (FR)",
+   "query": "thérapie photodynamique glioblastome",
+   "url": "",
+   "lang": "fr",
+   "active": true
+  },
+  {
+   "axe": "Technologie PDT / 5-ALA",
+   "label": "5-ALA / aminolevulinic acid",
+   "query": "\"aminolevulinic acid\" OR 5-ALA cancer",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Technologie PDT / 5-ALA",
+   "label": "Gleolan / Gliolan",
+   "query": "Gleolan OR Gliolan OR photonamic",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Concurrence glioblastome",
+   "label": "Glioblastome – essais & approbations",
+   "query": "glioblastoma FDA approval OR \"phase 3\" OR pivotal",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Concurrence glioblastome",
+   "label": "Glioblastome (FR)",
+   "query": "glioblastome traitement essai",
+   "url": "",
+   "lang": "fr",
+   "active": true
+  },
+  {
+   "axe": "Concurrence glioblastome",
+   "label": "Novocure / Optune / TTFields",
+   "query": "Novocure Optune OR \"tumor treating fields\" glioblastoma",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Concurrence glioblastome",
+   "label": "Sonodynamique / LITT / ultrasons",
+   "query": "sonodynamic OR \"laser interstitial thermal therapy\" OR \"focused ultrasound\" glioblastoma",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Concurrence glioblastome",
+   "label": "Vorasidenib / immunothérapies gliome",
+   "query": "vorasidenib OR \"CAR-T\" OR \"oncolytic virus\" glioma",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "FDA – produits combinés médicament-dispositif",
+   "query": "FDA \"combination product\" drug device guidance",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "FDA – orphan drug / fast track oncologie",
+   "query": "FDA \"orphan drug\" OR \"fast track\" brain cancer",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "EMA – médicaments orphelins / réforme pharma UE",
+   "query": "EMA orphan OR \"EU pharmaceutical legislation\" OR \"pharma package\"",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "MDR – dispositifs médicaux UE",
+   "query": "\"Medical Device Regulation\" MDR EU 2026 OR \"CE marking\" medical device",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "ANSM / HAS / accès précoce",
+   "query": "ANSM OR HAS \"accès précoce\" OR \"forfait innovation\" dispositif médical",
+   "url": "",
+   "lang": "fr",
+   "active": true
+  },
+  {
+   "axe": "Réglementaire",
+   "label": "FDA – communiqués officiels",
+   "query": "",
+   "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Marché & financement",
+   "label": "Financement medtech / biotech France",
+   "query": "levée de fonds biotech OR medtech oncologie France",
+   "url": "",
+   "lang": "fr",
+   "active": true
+  },
+  {
+   "axe": "Marché & financement",
+   "label": "Neurochirurgie – dispositifs & M&A",
+   "query": "neurosurgery device acquisition OR funding brain tumor",
+   "url": "",
+   "lang": "en",
+   "active": true
+  },
+  {
+   "axe": "Marché & financement",
+   "label": "Prix & remboursement oncologie",
+   "query": "oncology drug pricing reimbursement Europe OR \"Inflation Reduction Act\" orphan",
+   "url": "",
+   "lang": "en",
+   "active": true
+  }
+ ]
+}
